@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+
+   <head>
+      <title>Home</title>
+   </head>
+
+   <script src = "/socket.io/socket.io.js"></script>
+   <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+
+   <body>HOME
+   <form>
+     <input id="searchbar" type="text" name="search" placeholder="search for drugs/mechs"></input>
+   </form>
+
+   <p id="Drugs"> Drugs </p>
+   <p id="Mechs"> Mechs </p>
+
+   <script>
+
+       // set up socket
+       var socket = io.connect('http://localhost:3000');
+
+       // listen for user input
+       $(document).ready(function() {
+       var searchbar = $('form #searchbar');
+       searchbar.keyup(function() {
+          // clear the results list
+          var queryString = searchbar.val();
+          console.log(queryString)
+          $('#Drugs').empty();
+          $('#Drugs').text("Drugs")
+          $('#Mechs').empty();
+          $('#Mechs').text("Mechs")
+          if (queryString != ""){
+          // send queryString to the backend
+          socket.emit('find', queryString);
+        };
+       });
+      });
+
+      // query return from backend
+      socket.on('found_drugs', function(drugs) {
+          // render the results
+          drugs.forEach(function(drug){
+            $('#Drugs').append($('<li id="' + drug["name"] + '">').text(drug["name"]));
+
+            $('#'+drug["name"]+'').wrap(function() {
+               var link = $('<a href="/"></a>');
+               link.attr('href', '/drugs/'+drug["_id"]);
+               return link;
+            });
+
+          });
+
+      });
+
+      socket.on('found_mechs', function(mechs) {
+          // render the results
+          mechs.forEach(function(mech){
+            $('#Mechs').append($('<li id="' + mech["name"] + '">').text(mech["name"]));
+
+            $('#'+mech["name"]+'').wrap(function() {
+               var link = $('<a href="/"></a>');
+               link.attr('href', '/mechs/'+mech["_id"]);
+               return link;
+            });
+
+          });
+      });
+
+   </script>
+
+   </body>
+
+</html>
